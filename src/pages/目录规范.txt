@@ -1,0 +1,30 @@
+src/
+├── assets/          # 存放静态资源，如图片、字体、图标等
+│   ├── images/
+│   ├── fonts/
+│   └── icons/
+├── components/      # 存放可复用的通用组件
+│   ├── common/      # 通用基础组件，如按钮、输入框等
+│   │   ├── Button.js
+│   │   └── Button.module.css
+│   │   ├── Input.js
+│   │   └── Input.module.css
+│   └── layout/      # 布局组件，如头部、底部导航栏等
+│       ├── Header.js
+│       └── Header.module.css
+│       ├── Footer.js
+│       └── Footer.module.css
+├── pages/           # 存放页面级组件
+│   ├── Home.js
+│   └── Home.module.css
+│   ├── Category.js
+│   └── Category.module.css
+│   ├── Cart.js
+│   └── Cart.module.css
+├── services/        # 存放与后端交互的 API 服务
+│   └── api.js
+├── utils/           # 存放工具函数，如日期处理、验证函数等
+│   └── helper.js
+├── App.js
+├── App.module.css
+├── index.js
