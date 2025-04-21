@@ -1,0 +1,84 @@
+.profileContainer {
+  background-color: #fff;
+  height: 100vh;
+}
+
+.header {
+  background-color: #07c160;
+  color: white;
+  padding: 20px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin-right: 20px;
+}
+
+.userText {
+  display: flex;
+  flex-direction: column;
+}
+
+.userName {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  overflow: hidden;
+}
+
+.userId {
+  font-size: 14px;
+  color: #666;
+}
+.signature {
+  font-size: 14px;
+  color: #666;
+  margin-top: 5px; 
+  /* 添加以下样式实现文本溢出省略 */
+  white-space: nowrap; /* 禁止文本换行 */
+  overflow: hidden; /* 隐藏溢出的内容 */
+  text-overflow: ellipsis; /* 用省略号表示溢出的内容 */
+  max-width: 100%; /* 确保不会超出父容器 */
+}
+
+.infoItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.infoItemText {
+  font-size: 16px;
+}
+
+.arrow {
+  width: 12px;
+  height: 12px;
+  border-top: 2px solid #999;
+  border-right: 2px solid #999;
+  transform: rotate(45deg);
+}
+
+.infoItemLink {
+  display: block; /* 让 Link 以块级元素显示，填充整个父容器 */
+  text-decoration: none; /* 去除链接下划线 */
+  color: inherit; /* 继承父元素的文字颜色 */
+}
+
+.infoItemLink:hover {
+  cursor: pointer; /* 鼠标悬停时显示手型指针 */
+}

@@ -1,0 +1,62 @@
+.moreProfileContainer {
+  padding: 10px;
+}
+
+.formGroup {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.inputWithButton {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+input {
+  width:70%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.previewAvatar {
+  width: 100px;
+  height: 100px;
+  margin-top: 10px;
+  border-radius: 50%;
+}
+
+.confirmButton {
+  padding: 8px 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.confirmButton:hover {
+  background-color: #0056b3;
+}
+
+.logoutButton {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  padding: 10px 20px;
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.logoutButton:hover {
+  background-color: #cc0000;
+}

@@ -1,16 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
-import MessagesPage from './MessagesPage';
-import ContactsPage from './ContactsPage';
-import ProfilePage from './ProfilePage';
+import React, { useEffect, useState } from 'react';
+import {  Link, useLocation, Outlet } from 'react-router-dom';
 
 const Layout = () => {
-  const [activeItem, setActiveItem] = useState('messages');
   const [unreadMessages, setUnreadMessages] = useState(5); 
   const location = useLocation();
+  const [activeItem, setActiveItem] = useState(() => {
+    // 根据当前路径初始化 activeItem
+    if (location.pathname.includes('messages')) {
+      return 'messages';
+    } else if (location.pathname.includes('contacts')) {
+      return 'contacts';
+    } else if (location.pathname.includes('profile')) {
+      return 'profile';
+    }
+    return 'messages';
+  });
 
   const handleItemClick = (item) => {
     setActiveItem(item);
+    setUnreadMessages(0);
   };
 
   useEffect(() => {
@@ -20,14 +28,20 @@ const Layout = () => {
     };
   }, []);
 
+  // 监听路径变化，更新 activeItem
+  useEffect(() => {
+    if (location.pathname.includes('messages')) {
+      setActiveItem('messages');
+    } else if (location.pathname.includes('contacts')) {
+      setActiveItem('contacts');
+    } else if (location.pathname.includes('profile')) {
+      setActiveItem('profile');
+    }
+  }, [location.pathname]);
+
   return (
     <div className="App">
-      <Routes>
-        {/* 使用相对路径 */}
-        <Route path="messages" element={<MessagesPage />} /> 
-        <Route path="contacts" element={<ContactsPage />} />
-        <Route path="profile" element={<ProfilePage />} />
-      </Routes>
+      <Outlet />
       <div className="bottom-navigation">
         <Link
           to="messages"
@@ -41,7 +55,20 @@ const Layout = () => {
               style={{ width: '24px', height: '24px' }}
             />
             {unreadMessages > 0 && (
-              <div className="unread-badge">
+              <div className="unread-badge" style={{
+                position: 'absolute',
+                top: '-5px',
+                right: '-5px',
+                backgroundColor: 'red',
+                color: 'white',
+                borderRadius: '50%',
+                width: '18px',
+                height: '18px',
+                fontSize: '12px',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}>
                 {unreadMessages > 99 ? '99+' : unreadMessages}
               </div>
             )}
