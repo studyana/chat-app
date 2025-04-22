@@ -59,3 +59,27 @@ body {
   padding: 0 4px;
   box-sizing: border-box;
 }
+
+
+
+.App {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.outlet-container {
+  flex: 1;
+  overflow-y: auto;
+  /* 添加底部外边距，值等于底部导航栏的高度 */
+  margin-bottom: 60px; 
+}
+
+.bottom-navigation {
+  flex-shrink: 0;
+  /* 或者使用 position: fixed */
+  /* position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0; */
+}

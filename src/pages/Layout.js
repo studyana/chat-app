@@ -18,7 +18,7 @@ const Layout = () => {
 
   const handleItemClick = (item) => {
     setActiveItem(item);
-    setUnreadMessages(0);
+    // setUnreadMessages(0);
   };
 
   useEffect(() => {
@@ -41,7 +41,10 @@ const Layout = () => {
 
   return (
     <div className="App">
-      <Outlet />
+      {/* 给包含 Outlet 的容器添加一个类名，方便设置样式 */}
+      <div className="outlet-container">
+        <Outlet />
+      </div>
       <div className="bottom-navigation">
         <Link
           to="messages"

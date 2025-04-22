@@ -34,7 +34,7 @@ const MessagesPage = () => {
     <div>
       {/* <h1>消息界面</h1> */}
       <div style={{ 
-        maxHeight: 'calc(100vh - 100px)', 
+        maxHeight: 'calc(100vh - 60px)', 
         overflowY: 'auto', 
         border: '1px solid #ccc',
         borderRight:'none',

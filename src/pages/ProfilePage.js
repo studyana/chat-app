@@ -1,12 +1,18 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import styles from './ProfilePage.module.css';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { fetchUserInfo } from '../store/modules/userSlice';
+import { useDispatch } from'react-redux';
 
 const ProfilePage = () => {
-  const userInfo = useSelector((state) => state.user);
-
+  const dispatch = useDispatch(); 
+  useEffect(() => {
+    dispatch(fetchUserInfo()); 
+    console.log('页面加载完成');
+  }, [dispatch]); // 空数组表示只在组件挂载时执行一次
+  const userInfo = useSelector((state) => state.user.userInfo);
   return (
     <div className={styles.profileContainer}>
       <div className={styles.header}>个人信息</div>

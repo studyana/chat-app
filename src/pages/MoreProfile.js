@@ -2,14 +2,17 @@ import React, { useState } from 'react';
 import styles from './MoreProfile.module.css';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { updateUserInfo } from '../store/userSlice';
+import { updateUserInfo } from '../store/modules/userSlice';
+import { clearToken } from '../store/modules/tokenSlice';
+import { clearUserInfo } from '../store/modules/userSlice';
 
+// 假设这是你的原始密码
 const originalPassword = '123456';
 
 const MoreProfile = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const userInfo = useSelector((state) => state.user);
+  const userInfo = useSelector((state) => state.user.userInfo);
 
   const [avatar, setAvatar] = useState(userInfo.avatar);
   const [oldPassword, setOldPassword] = useState('');
@@ -66,7 +69,9 @@ const MoreProfile = () => {
   };
 
   const handleLogout = () => {
-    navigate('/');
+    dispatch(clearToken());
+    dispatch(clearUserInfo())
+    navigate('/login');
   };
 
   return (
