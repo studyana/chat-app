@@ -1,49 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './ContactsPage.module.css';
-
-// 模拟联系人数据
-const contacts = [
-  { name: 'Alice', avatar: 'assets/images/av1.jpg' },
-  { name: 'Bob', avatar: 'https://example.com/avatar2.jpg' },
-  { name: 'Charlie', avatar: 'https://example.com/avatar3.jpg' },
-  // 可以继续添加更多联系人
-];
-
-// 模拟群聊数据，添加群聊成员信息
-const groups = [
-  { 
-    name: '工作群', 
-    id: 1,
-    members: [
-      { name: '张三', avatar: 'assets/images/zs.jpg' },
-      { name: '李四', avatar: 'assets/images/ls.jpg' }
-    ]
-  },
-  // 可以继续添加更多群聊
-];
-
-// 模拟标签数据
-const tags = [
-  { name: '同事', contacts: [ { name: 'Alice', avatar: 'assets/images/av1.jpg' } ] },
-  { name: '朋友', contacts: [ { name: 'Bob', avatar: 'https://example.com/avatar2.jpg' } ] },
-];
-
-// 新增一个大标签
-const mainTag = {
-  name: '标签',
-  subTags: tags
-};
-
-// 修改为直接对 contacts 数组排序
-const allContacts = [...contacts].sort((a, b) => a.name.localeCompare(b.name));
+import { useDispatch, useSelector } from 'react-redux'; 
+import { fetchContact, fetchGroup, fetchTag, updateGroup, updateTag } from '../store/modules/contactSlice'; 
+import CreateTagModal from '../components/card/CreateTagModal';
+import CreateGroupModal from '../components/card/CreateGroupModal';
+// 导入 useNavigate
+import { useNavigate } from 'react-router-dom';
 
 const ContactsPage = () => {
-  // 控制每个分组（包括群聊分组、标签分组）的展开与折叠状态
-  const [expandedSections, setExpandedSections] = useState({});
-  // 控制新建群聊弹窗的显示与隐藏
-  const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  useEffect(() => {
+    dispatch(fetchContact());
+    dispatch(fetchGroup()); 
+    dispatch(fetchTag());
+    console.log("页面被加载");
+  }, [dispatch]);
+  const contacts = useSelector((state) => state.contact.contact); 
+  const groups =  useSelector((state) => state.contact.group); 
+  const tags = useSelector((state) => state.contact.tag); 
+  const mainTag = {
+    name: '标签',
+    subTags: tags
+  };
+  const allContacts = [...contacts].sort((a, b) => a.name.localeCompare(b.name));
 
-  // 切换分组展开与折叠状态
+  const [expandedSections, setExpandedSections] = useState({});
+  const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
+  const [showCreateTagModal, setShowCreateTagModal] = useState(false);
+
+  // 新增删除确认状态
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteType, setDeleteType] = useState(''); // 'tag' 或 'group'
+  const [deleteIndex, setDeleteIndex] = useState(null);
+  let lastInitial = null;
   const toggleSection = (sectionName) => {
     setExpandedSections((prevState) => ({
       ...prevState,
@@ -51,31 +41,125 @@ const ContactsPage = () => {
     }));
   };
 
-  // 控制标签展开与折叠状态
-  const [expandedTagSections, setExpandedTagSections] = useState({});
-
-  // 切换标签分组展开与折叠状态
-  const toggleTagSection = (sectionName) => {
-    setExpandedTagSections((prevState) => ({
-      ...prevState,
-      [sectionName]: !prevState[sectionName],
-    }));
-  };
-
-  // 显示新建群聊弹窗
-  const handleCreateGroup = () => {
+  const handleCreateGroup = (e) => {
+    e.stopPropagation();
     setShowCreateGroupModal(true);
   };
 
-  // 关闭新建群聊弹窗
   const handleCloseModal = () => {
     setShowCreateGroupModal(false);
   };
 
-  let lastInitial = null;
-
-  // 新增状态用于保存群聊名称
   const [groupName, setGroupName] = useState('');
+  const [selectedContactIds, setSelectedContactIds] = useState(new Set());
+
+  const handleCheckboxChange = (contactId) => {
+    const newSelectedIds = new Set(selectedContactIds);
+    if (newSelectedIds.has(contactId)) {
+      newSelectedIds.delete(contactId);
+    } else {
+      newSelectedIds.add(contactId);
+    }
+    setSelectedContactIds(newSelectedIds);
+    console.log('Selected contact IDs:', Array.from(newSelectedIds)); 
+  };
+
+  const handleCreateGroupSubmit = () => {
+    const newGroupId = groups.length > 0 ? Math.max(...groups.map(g => g.groupId)) + 1 : 1;
+    const newGroup = {
+      name: groupName,
+      groupId: newGroupId,
+      avatar: '',
+      members: Array.from(selectedContactIds).map(id => {
+        const contact = contacts.find(c => c.contactId === id);
+        return {
+          name: contact ? contact.name : '',
+          avatar: contact ? contact.avatar : ''
+        };
+      })
+    };
+  
+    const updatedGroups = [...groups, newGroup];
+    dispatch(updateGroup(updatedGroups));
+    console.log('创建群聊:', groupName, "群聊成员:", Array.from(selectedContactIds));
+    handleCloseModal();
+  };
+
+  const [tagName, setTagName] = useState('');
+  const [selectedTagContactIds, setSelectedTagContactIds] = useState(new Set());
+
+  const handleTagCheckboxChange = (contactId) => {
+    const newSelectedIds = new Set(selectedTagContactIds);
+    if (newSelectedIds.has(contactId)) {
+      newSelectedIds.delete(contactId);
+    } else {
+      newSelectedIds.add(contactId);
+    }
+    setSelectedTagContactIds(newSelectedIds);
+    console.log('Selected tag contact IDs:', Array.from(newSelectedIds));
+  };
+
+  const handleCreateTagSubmit = () => {
+    const newTag = {
+      name: tagName,
+      contacts: Array.from(selectedTagContactIds).map(id => {
+        const contact = contacts.find(c => c.contactId === id);
+        return {
+          contactId: id,
+          name: contact ? contact.name : '',
+          avatar: contact ? contact.avatar : ''
+        };
+      })
+    };
+
+    const updatedTags = [...tags, newTag];
+    dispatch(updateTag(updatedTags));
+    console.log('创建标签:', tagName, "标签成员:", Array.from(selectedTagContactIds));
+    setShowCreateTagModal(false);
+  };
+
+  const handleCreateTag = (e) => {
+    e.stopPropagation(); 
+    setShowCreateTagModal(true);
+    console.log("显示新建标签弹窗");
+  };
+
+  const handleCloseTagModal = () => {
+    setShowCreateTagModal(false);
+  };
+
+  // 处理删除确认
+  const handleDeleteConfirm = () => {
+    if (deleteType === 'tag') {
+      const updatedTags = tags.filter((_, index) => index !== deleteIndex);
+      dispatch(updateTag(updatedTags));
+    } else if (deleteType === 'group') {
+      const updatedGroups = groups.filter((_, index) => index !== deleteIndex);
+      dispatch(updateGroup(updatedGroups));
+    }
+    setShowDeleteConfirm(false);
+    setDeleteType('');
+    setDeleteIndex(null);
+  };
+
+  // 处理删除取消
+  const handleDeleteCancel = () => {
+    setShowDeleteConfirm(false);
+    setDeleteType('');
+    setDeleteIndex(null);
+  };
+
+  // 处理联系人点击事件
+  const handleContactClick = (contactId) => {
+    // 假设聊天界面的路由路径为 /chat/:contactId
+    navigate(`/chat/${contactId}`);
+  };
+
+  // 处理群聊点击事件
+  const handleGroupClick = (groupId) => {
+    // 假设群聊聊天界面的路由路径为 /group-chat/:groupId
+    navigate(`/group-chat/${groupId}`);
+  };
 
   return (
     <div className={styles.contactsContainer}>
@@ -89,27 +173,44 @@ const ContactsPage = () => {
       </div>
 
       <ul className={styles.contactList}>
-        {/* 大标签分组 */}
+        {/* 大标签分组，添加 + 号按钮 */}
         <li
           className={styles.sectionHeader}
           onClick={() => toggleSection(mainTag.name)}
         >
           <span className={expandedSections[mainTag.name] ? styles.arrowDown : styles.arrowRight} />
           {mainTag.name}
+          <span className={styles.addGroupButton} onClick={handleCreateTag}>+</span>
         </li>
         {expandedSections[mainTag.name] && (
-          mainTag.subTags.map((subTag) => (
+          mainTag.subTags.map((subTag, index) => (
             <React.Fragment key={subTag.name}>
               <li
                 className={styles.subSectionHeader}
-                onClick={() => toggleSection(subTag.name)}
               >
-                <span className={expandedSections[subTag.name] ? styles.arrowDown : styles.arrowRight} />
+                <span 
+                  className={expandedSections[subTag.name] ? styles.arrowDown : styles.arrowRight} 
+                  onClick={() => toggleSection(subTag.name)}
+                />
                 {subTag.name}
+                <span 
+                  className={styles.deleteButton} 
+                  onClick={() => {
+                    setShowDeleteConfirm(true);
+                    setDeleteType('tag');
+                    setDeleteIndex(index);
+                  }}
+                >
+                  —
+                </span>
               </li>
               {expandedSections[subTag.name] && (
                 subTag.contacts.map((contact, contactIndex) => (
-                  <li key={contactIndex} className={styles.contactItem}>
+                  <li 
+                    key={contactIndex} 
+                    className={styles.contactItem}
+                    onClick={() => handleContactClick(contact.contactId)}
+                  >
                     <div className={styles.contactInfo}>
                       <img
                         src={contact.avatar}
@@ -118,7 +219,6 @@ const ContactsPage = () => {
                       />
                       <span className={styles.contactName}>{contact.name}</span>
                     </div>
-                    <input type="checkbox" />
                   </li>
                 ))
               )}
@@ -130,25 +230,46 @@ const ContactsPage = () => {
         <li
           className={styles.sectionHeader}
           data-section="群聊"
-          onClick={() => toggleSection('群聊')} // 确保点击事件调用 toggleSection 函数
+          onClick={() => toggleSection('群聊')} 
         >
           <span className={expandedSections['群聊'] ? styles.arrowDown : styles.arrowRight} />
           群聊
           <span className={styles.addGroupButton} onClick={handleCreateGroup}>+</span>
         </li>
         {expandedSections['群聊'] && (
-          groups.map((group) => (
-            <React.Fragment key={group.id}>
+          groups.map((group, index) => (
+            <React.Fragment key={group.groupId}>
               <li
                 className={styles.subSectionHeader}
-                onClick={() => toggleSection(`group-${group.id}`)}
+                onClick={() => handleGroupClick(group.groupId)} // 添加点击事件
               >
-                <span className={expandedSections[`group-${group.id}`] ? styles.arrowDown : styles.arrowRight} />
+                <span 
+                  className={expandedSections[`group-${group.groupId}`] ? styles.arrowDown : styles.arrowRight} 
+                  onClick={(e) => {
+                    e.stopPropagation(); // 阻止事件冒泡，避免触发群聊跳转
+                    toggleSection(`group-${group.groupId}`);
+                  }}
+                />
                 {group.name}
+                <span 
+                  className={styles.deleteButton} 
+                  onClick={(e) => {
+                    e.stopPropagation(); // 阻止事件冒泡，避免触发群聊跳转
+                    setShowDeleteConfirm(true);
+                    setDeleteType('group');
+                    setDeleteIndex(index);
+                  }}
+                >
+                  —
+                </span>
               </li>
-              {expandedSections[`group-${group.id}`] && (
+              {expandedSections[`group-${group.groupId}`] && (
                 group.members.map((member, memberIndex) => (
-                  <li key={memberIndex} className={styles.contactItem}>
+                  <li 
+                    key={memberIndex} 
+                    className={styles.contactItem}
+                    onClick={() => handleContactClick(member.contactId)}
+                  >
                     <img
                       src={member.avatar}
                       alt={member.name}
@@ -180,7 +301,11 @@ const ContactsPage = () => {
           return (
             <>
               {divider}
-              <li key={index} className={styles.contactItem}>
+              <li 
+                key={index} 
+                className={styles.contactItem}
+                onClick={() => handleContactClick(contact.contactId)}
+              >
                 <img
                   src={contact.avatar}
                   alt={contact.name}
@@ -195,76 +320,43 @@ const ContactsPage = () => {
 
       {/* 新建群聊弹窗 */}
       {showCreateGroupModal && (
+        <CreateGroupModal 
+          handleCheckboxChange={handleCheckboxChange}
+          handleCloseModal={handleCloseModal}
+          handleCreateGroupSubmit={handleCreateGroupSubmit}
+          groupName={groupName}
+          setGroupName={setGroupName}
+          expandedSections={expandedSections}
+          toggleSection={toggleSection}
+          allContacts={allContacts}
+          mainTag={mainTag}
+          selectedContactIds={selectedContactIds}
+        />
+      )}
+      {/* 新建标签弹窗 */}
+      {showCreateTagModal && (
+        <CreateTagModal 
+          tagName={tagName}
+          setTagName={setTagName}
+          handleCreateTagSubmit={handleCreateTagSubmit}
+          handleCloseTagModal={handleCloseTagModal}
+          allContacts={allContacts}
+          selectedTagContactIds={selectedTagContactIds}
+          handleTagCheckboxChange={handleTagCheckboxChange}
+        />
+      )}
+
+      {/* 删除确认弹窗 */}
+      {showDeleteConfirm && (
         <div className={styles.modal}>
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
-              <h2>新建群聊</h2>
-              <span className={styles.closeButton} onClick={handleCloseModal}>×</span>
+              <h2>确认删除</h2>
             </div>
             <div className={styles.modalBody}>
-              <div className={styles.groupNameInputContainer}>
-                <input
-                  type="text"
-                  placeholder="输入群聊名称"
-                  value={groupName}
-                  onChange={(e) => setGroupName(e.target.value)}
-                  className={styles.groupNameInput}
-                />
-                <button onClick={handleCreateGroupSubmit} className={styles.createGroupButton}>创建群聊</button>
-              </div>
-              {/* 显示标签分组 */}
-              <li
-                className={styles.sectionHeader}
-                onClick={() => toggleSection(mainTag.name)}
-              >
-                <span className={expandedSections[mainTag.name] ? styles.arrowDown : styles.arrowRight} />
-                {mainTag.name}
-              </li>
-              {expandedSections[mainTag.name] && (
-                mainTag.subTags.map((subTag) => (
-                  <React.Fragment key={subTag.name}>
-                    <li
-                      className={styles.subSectionHeader}
-                      onClick={() => toggleTagSection(subTag.name)}
-                    >
-                      <span className={expandedTagSections[subTag.name] ? styles.arrowDown : styles.arrowRight} />
-                      {subTag.name}
-                    </li>
-                    {expandedTagSections[subTag.name] && (
-                      subTag.contacts.flatMap(section => section.items).map((contact, contactIndex) => (
-                        <li key={contactIndex} className={styles.contactItem}>
-                          <div className={styles.contactInfo}>
-                            <img
-                              src={contact.avatar}
-                              alt={contact.name}
-                              className={styles.contactAvatar}
-                            />
-                            <span className={styles.contactName}>{contact.name}</span>
-                          </div>
-                          <input type="checkbox" />
-                        </li>
-                      ))
-                    )}
-                  </React.Fragment>
-                ))
-              )}
-              {/* 显示所有联系人 */}
-              <li className={styles.sectionHeader}>所有联系人</li>
-              <ul>
-                {allContacts.map((contact, index) => (
-                  <li key={index} className={styles.contactItem}>
-                    <div className={styles.contactInfo}>
-                      <img
-                        src={contact.avatar}
-                        alt={contact.name}
-                        className={styles.contactAvatar}
-                      />
-                      <span className={styles.contactName}>{contact.name}</span>
-                    </div>
-                    <input type="checkbox" />
-                  </li>
-                ))}
-              </ul>
+              <p>确认删除{deleteType === 'tag' ? '标签' : '群聊'}吗？</p>
+              <button onClick={handleDeleteConfirm} className={styles.confirmButton}>确认</button>
+              <button onClick={handleDeleteCancel} className={styles.cancelButton}>取消</button>
             </div>
           </div>
         </div>
@@ -275,9 +367,3 @@ const ContactsPage = () => {
 
 export default ContactsPage;
 
-// 处理创建群聊的逻辑
-const handleCreateGroupSubmit = () => {
-  // 这里可以添加实际的创建群聊逻辑，例如调用 API
-  // console.log('创建群聊:', groupName);
-  // handleCloseModal();
-};

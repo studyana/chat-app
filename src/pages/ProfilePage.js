@@ -10,7 +10,7 @@ const ProfilePage = () => {
   const dispatch = useDispatch(); 
   useEffect(() => {
     dispatch(fetchUserInfo()); 
-    console.log('页面加载完成');
+    // console.log('页面加载完成');
   }, [dispatch]); // 空数组表示只在组件挂载时执行一次
   const userInfo = useSelector((state) => state.user.userInfo);
   return (

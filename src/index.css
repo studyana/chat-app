@@ -70,9 +70,9 @@ body {
 
 .outlet-container {
   flex: 1;
-  overflow-y: auto;
+  /* overflow-y: auto; */
   /* 添加底部外边距，值等于底部导航栏的高度 */
-  margin-bottom: 60px; 
+  /* margin-bottom: 60px;  */
 }
 
 .bottom-navigation {

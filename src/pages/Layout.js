@@ -21,12 +21,6 @@ const Layout = () => {
     // setUnreadMessages(0);
   };
 
-  useEffect(() => {
-    console.log('Layout 组件已挂载');
-    return () => {
-      console.log('Layout 组件将卸载');
-    };
-  }, []);
 
   // 监听路径变化，更新 activeItem
   useEffect(() => {
